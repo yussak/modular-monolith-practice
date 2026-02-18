@@ -1,0 +1,33 @@
+# 機密情報（絶対にコミットしない）
+/config/master.key
+/config/credentials/*.key
+
+# ログ
+/log/*
+!/log/.keep
+
+# 一時ファイル
+/tmp/*
+!/tmp/.keep
+
+# ストレージ（アップロードファイル）
+/storage/*
+!/storage/.keep
+
+# ビルド成果物
+/public/assets
+
+# 依存関係（Dockerでキャッシュするため）
+/vendor/bundle
+
+# デバッグ
+.byebug_history
+
+# 環境変数
+.env
+.env.*
+!.env.example
+
+# Ignore key files for decrypting credentials and more.
+/config/*.key
+
