@@ -1,3 +1,5 @@
+import LogoutButton from "./_components/LogoutButton";
+
 async function fetchHealth() {
   const apiUrl = process.env.INTERNAL_API_URL ?? "http://localhost:3000";
   const res = await fetch(`${apiUrl}/api/v1/health`, { cache: "no-store" });
@@ -17,7 +19,10 @@ export default async function Home() {
 
   return (
     <main style={{ padding: "2rem", fontFamily: "sans-serif" }}>
-      <h1>EC Site - Modular Monolith Practice</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h1>EC Site - Modular Monolith Practice</h1>
+        <LogoutButton />
+      </div>
       <h2>Rails API 疎通確認</h2>
       {data ? (
         <div style={{ color: "green" }}>
