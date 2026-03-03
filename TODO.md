@@ -21,6 +21,6 @@
 ---
 test
 
-Unit      → Modelのロジック（バリデーション・スコープ・メソッド）
-Integration → Controller（APIのリクエスト/レスポンス）
-E2E       → 最重要フロー限定
+- Unit      → Modelのロジック（バリデーション・スコープ・メソッド）
+- Integration → Controller（APIのリクエスト/レスポンス）
+- E2E       → 最重要フロー限定
