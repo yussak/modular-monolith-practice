@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe "Api::V1::Products", type: :request do
   describe "GET /api/v1/products" do
-    let!(:user) { User.create!(email: "seller@example.com", password: "password123") }
+    let!(:user) { User.create!(name: "販売者", email: "seller@example.com", password: "password123") }
 
     context "商品が存在する場合" do
       before do
