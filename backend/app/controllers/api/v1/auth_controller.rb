@@ -2,7 +2,7 @@ module Api
   module V1
     class AuthController < ApplicationController
       def register
-        user = User.new(email: params[:email], password: params[:password])
+        user = User.new(name: params[:name], email: params[:email], password: params[:password])
         if user.save
           token = JwtHelper.encode({ user_id: user.id })
           render json: { token: token }, status: :created
