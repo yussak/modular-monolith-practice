@@ -15,21 +15,12 @@ async function fetchProducts(): Promise<Product[]> {
 }
 
 export default async function ProductsPage() {
-  let products: Product[] = [];
-  let error: string | null = null;
-
-  try {
-    products = await fetchProducts();
-  } catch (e) {
-    error = e instanceof Error ? e.message : "Unknown error";
-  }
+  const products = await fetchProducts();
 
   return (
     <main style={{ padding: "2rem", fontFamily: "sans-serif" }}>
       <h1>商品一覧</h1>
-      {error ? (
-        <p style={{ color: "red" }}>{error}</p>
-      ) : products.length === 0 ? (
+      {products.length === 0 ? (
         <p>商品がありません</p>
       ) : (
         <ul>
