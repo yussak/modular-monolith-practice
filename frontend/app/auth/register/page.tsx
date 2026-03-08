@@ -7,6 +7,7 @@ import { setToken } from "@/lib/auth";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -16,7 +17,7 @@ export default function RegisterPage() {
     setError(null);
     const res = await apiFetch("/api/v1/auth/register", {
       method: "POST",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ name, email, password }),
     });
     const data = await res.json();
     if (res.ok) {
@@ -31,6 +32,18 @@ export default function RegisterPage() {
     <main style={{ padding: "2rem", fontFamily: "sans-serif", maxWidth: "400px" }}>
       <h1>会員登録</h1>
       <form onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="name">名前</label>
+          <br />
+          <input
+            id="name"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            style={{ width: "100%", marginBottom: "1rem" }}
+          />
+        </div>
         <div>
           <label htmlFor="email">メールアドレス</label>
           <br />
