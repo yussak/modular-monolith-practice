@@ -7,7 +7,8 @@ type Product = {
 };
 
 async function fetchProducts(): Promise<Product[]> {
-  const apiUrl = process.env.INTERNAL_API_URL ?? "http://localhost:3000";
+  const apiUrl = process.env.INTERNAL_API_URL;
+  if (!apiUrl) throw new Error("INTERNAL_API_URL is not set");
   const res = await fetch(`${apiUrl}/api/v1/products`, { cache: "no-store" });
   if (!res.ok) throw new Error("商品の取得に失敗しました");
   return res.json();
