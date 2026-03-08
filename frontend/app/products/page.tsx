@@ -28,7 +28,7 @@ export default async function ProductsPage() {
         <ul>
           {products.map((product) => (
             <li key={product.id} style={{ marginBottom: "1rem" }}>
-              <Link href={`/products/${product.id}`}>
+              <Link href={`/products/${product.id}`} style={{ color: "blue", textDecoration: "underline" }}>
                 <strong>{product.name}</strong>
               </Link>{" "}
               — {product.price}円
