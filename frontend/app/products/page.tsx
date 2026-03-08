@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 type Product = {
   id: number;
   name: string;
@@ -26,7 +28,10 @@ export default async function ProductsPage() {
         <ul>
           {products.map((product) => (
             <li key={product.id} style={{ marginBottom: "1rem" }}>
-              <strong>{product.name}</strong> — {product.price}円
+              <Link href={`/products/${product.id}`} style={{ color: "blue", textDecoration: "underline" }}>
+                <strong>{product.name}</strong>
+              </Link>{" "}
+              — {product.price}円
               {product.description && <p>{product.description}</p>}
             </li>
           ))}
