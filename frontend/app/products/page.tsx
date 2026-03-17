@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { auth } from "@/auth";
+import { apiFetch } from "@/lib/api";
 import DeleteButton from "./[id]/DeleteButton";
 
 type Product = {
@@ -10,15 +12,14 @@ type Product = {
 };
 
 async function fetchProducts(): Promise<Product[]> {
-  const apiUrl = process.env.INTERNAL_API_URL;
-  if (!apiUrl) throw new Error("INTERNAL_API_URL is not set");
-  const res = await fetch(`${apiUrl}/api/v1/products`, { cache: "no-store" });
+  const res = await apiFetch("/api/v1/products", { cache: "no-store" });
   if (!res.ok) throw new Error("商品の取得に失敗しました");
   return res.json();
 }
 
 export default async function ProductsPage() {
-  const products = await fetchProducts();
+  const [products, session] = await Promise.all([fetchProducts(), auth()]);
+  const currentUserId = (session?.user as { id?: string } | undefined)?.id;
 
   return (
     <main style={{ padding: "2rem", fontFamily: "sans-serif" }}>
@@ -37,7 +38,7 @@ export default async function ProductsPage() {
               </Link>{" "}
               — {product.price}円
               {product.description && <p>{product.description}</p>}
-              <DeleteButton productId={product.id} />
+              {currentUserId === String(product.user_id) && <DeleteButton productId={product.id} />}
               <span>デバッグ用：user_id={product.user_id}</span>
             </li>
           ))}

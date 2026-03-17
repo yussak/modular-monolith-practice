@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, FormEvent } from "react";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { apiFetch } from "@/lib/api";
-import { setToken } from "@/lib/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -14,16 +13,15 @@ export default function LoginPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    const res = await apiFetch("/api/v1/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
     });
-    const data = await res.json();
-    if (res.ok) {
-      setToken(data.token);
-      router.push("/");
-    } else {
+    if (result?.error) {
       setError("メールアドレスまたはパスワードが正しくありません");
+    } else {
+      router.push("/");
     }
   }
 

@@ -1,11 +1,9 @@
 "use client";
 
 import { useState, FormEvent } from "react";
-import { useRouter } from "next/navigation";
-import { apiFetch } from "@/lib/api";
+import { createProduct } from "./actions";
 
 export default function NewProductPage() {
-  const router = useRouter();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
@@ -14,15 +12,10 @@ export default function NewProductPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    const res = await apiFetch("/api/v1/products", {
-      method: "POST",
-      body: JSON.stringify({ name, description: description || null, price: Number(price) }),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      router.push(`/products/${data.id}`);
-    } else {
-      setError(data.errors?.join(", ") ?? "商品の作成に失敗しました");
+    try {
+      await createProduct({ name, description: description || null, price: Number(price) });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "商品の作成に失敗しました");
     }
   }
 
