@@ -12,6 +12,21 @@ module Api
       rescue ActiveRecord::RecordNotFound
         render json: { error: "商品が見つかりません" }, status: :not_found
       end
+
+      def destroy
+        authenticate_user!
+        return if performed?
+
+        product = Product.find(params[:id])
+        if product.user_id != @current_user.id
+          return render json: { error: "権限がありません" }, status: :forbidden
+        end
+
+        product.destroy
+        render json: {}, status: :ok
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: "商品が見つかりません" }, status: :not_found
+      end
     end
   end
 end

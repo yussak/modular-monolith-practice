@@ -1,4 +1,5 @@
 import Link from "next/link";
+import DeleteButton from "./[id]/DeleteButton";
 
 type Product = {
   id: number;
@@ -33,6 +34,8 @@ export default async function ProductsPage() {
               </Link>{" "}
               — {product.price}円
               {product.description && <p>{product.description}</p>}
+              <DeleteButton productId={product.id} />
+              <span>デバッグ用：user_id={product.user_id}</span>
             </li>
           ))}
         </ul>
