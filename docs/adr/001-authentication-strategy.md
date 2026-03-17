@@ -1,7 +1,7 @@
 # ADR-001: 認証方式の選択
 
 ## ステータス
-Proposed
+Accepted
 
 ## コンテキスト
 
@@ -59,7 +59,7 @@ Rails側のレスポンスで `HttpOnly` フラグ付きCookieにJWTをセット
 
 ## 決定
 
-A（Auth.jsをNext.jsに導入）を選択予定
+Auth.jsをNext.jsに導入し、Auth.jsがJWTを発行・管理する。RailsはAuth.jsが発行したJWTを検証する形に変更する。ユーザー登録（`/auth/register`）はRailsが引き続き担う。
 
 ## 理由
 
@@ -78,5 +78,7 @@ AはAuth.jsに認証を集約することで以下が実現できる。
 
 ## 結果
 
-- 現状はAPIが権限を守っており機能的な問題はない
-- 選択によっては既存の認証コード（`lib/auth.ts`・`JwtHelper`・AuthController）の大幅な変更が生じる
+- `auth()` でServer Component・Client Component両方からログイン状態が取得できるようになる
+- `JwtHelper`・`AuthController`のlogin・logoutは削除される
+- RailsはAuth.jsが発行したJWTを検証する実装に変更が必要（`authenticate_user!`の変更）
+- 個人開発の初期段階であり移行コストは許容範囲と判断した
