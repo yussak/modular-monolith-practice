@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { apiFetch } from "@/lib/api";
 import DeleteButton from "./[id]/DeleteButton";
+import NewProductButton from "./NewProductButton";
 
 type Product = {
   id: number;
@@ -24,9 +25,7 @@ export default async function ProductsPage() {
   return (
     <main style={{ padding: "2rem", fontFamily: "sans-serif" }}>
       <h1>商品一覧</h1>
-      <Link href="/products/new" style={{ display: "inline-block", marginBottom: "1rem" }}>
-        新規作成
-      </Link>
+      <NewProductButton />
       {products.length === 0 ? (
         <p>商品がありません</p>
       ) : (
