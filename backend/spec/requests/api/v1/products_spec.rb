@@ -71,6 +71,56 @@ RSpec.describe "Api::V1::Products", type: :request do
     end
   end
 
+  describe "POST /api/v1/products" do
+    let(:headers) { { "Authorization" => "Bearer #{JwtHelper.encode({ user_id: user.id })}" } }
+
+    context "認証済みの場合" do
+      context "正常なパラメータの場合" do
+        it "201 と作成した商品を返す" do
+          post "/api/v1/products", params: { name: "新商品", price: 1500 }, headers: headers, as: :json
+
+          expect(response).to have_http_status(:created)
+
+          body = JSON.parse(response.body)
+          expect(body).to include("name" => "新商品", "price" => 1500, "user_id" => user.id)
+        end
+
+        it "description なしでも作成できる" do
+          post "/api/v1/products", params: { name: "説明なし商品", price: 500 }, headers: headers, as: :json
+
+          expect(response).to have_http_status(:created)
+          expect(JSON.parse(response.body)["description"]).to be_nil
+        end
+      end
+
+      context "name が空の場合" do
+        it "422 を返す" do
+          post "/api/v1/products", params: { name: "", price: 1500 }, headers: headers, as: :json
+
+          expect(response).to have_http_status(:unprocessable_entity)
+          expect(JSON.parse(response.body)).to have_key("errors")
+        end
+      end
+
+      context "price が負の値の場合" do
+        it "422 を返す" do
+          post "/api/v1/products", params: { name: "商品", price: -1 }, headers: headers, as: :json
+
+          expect(response).to have_http_status(:unprocessable_entity)
+          expect(JSON.parse(response.body)).to have_key("errors")
+        end
+      end
+    end
+
+    context "未認証の場合" do
+      it "401 を返す" do
+        post "/api/v1/products", params: { name: "新商品", price: 1500 }, as: :json
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+  end
+
   describe "GET /api/v1/products" do
     context "商品が存在する場合" do
       before do
