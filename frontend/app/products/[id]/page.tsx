@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { auth } from "@/auth";
 import DeleteButton from "./DeleteButton";
 
 type Product = {
@@ -20,16 +21,19 @@ async function fetchProduct(id: string): Promise<Product | null> {
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const product = await fetchProduct(id);
+  const [product, session] = await Promise.all([fetchProduct(id), auth()]);
 
   if (!product) notFound();
+
+  const currentUserId = (session?.user as { id?: string } | undefined)?.id;
+  const canDelete = currentUserId === String(product.user_id);
 
   return (
     <main style={{ padding: "2rem", fontFamily: "sans-serif" }}>
       <h1>{product.name}</h1>
       <p>価格: {product.price}円</p>
       {product.description && <p>説明: {product.description}</p>}
-      <DeleteButton productId={product.id} />
+      {canDelete && <DeleteButton productId={product.id} />}
     </main>
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { auth } from "@/auth";
 import DeleteButton from "./[id]/DeleteButton";
 
 type Product = {
@@ -18,7 +19,8 @@ async function fetchProducts(): Promise<Product[]> {
 }
 
 export default async function ProductsPage() {
-  const products = await fetchProducts();
+  const [products, session] = await Promise.all([fetchProducts(), auth()]);
+  const currentUserId = (session?.user as { id?: string } | undefined)?.id;
 
   return (
     <main style={{ padding: "2rem", fontFamily: "sans-serif" }}>
@@ -37,7 +39,7 @@ export default async function ProductsPage() {
               </Link>{" "}
               — {product.price}円
               {product.description && <p>{product.description}</p>}
-              <DeleteButton productId={product.id} />
+              {currentUserId === String(product.user_id) && <DeleteButton productId={product.id} />}
               <span>デバッグ用：user_id={product.user_id}</span>
             </li>
           ))}

@@ -2,8 +2,9 @@
 
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { apiFetch } from "@/lib/api";
-import { setToken } from "@/lib/auth";
+import { signIn } from "next-auth/react";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -15,16 +16,21 @@ export default function RegisterPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    const res = await apiFetch("/api/v1/auth/register", {
+    const res = await fetch(`${API_BASE}/api/v1/auth/register`, {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password }),
     });
     const data = await res.json();
-    if (res.ok) {
-      setToken(data.token);
-      router.push("/");
-    } else {
+    if (!res.ok) {
       setError(data.errors?.join(", ") ?? "登録に失敗しました");
+      return;
+    }
+    const result = await signIn("credentials", { email, password, redirect: false });
+    if (result?.error) {
+      setError("登録後のログインに失敗しました");
+    } else {
+      router.push("/");
     }
   }
 
