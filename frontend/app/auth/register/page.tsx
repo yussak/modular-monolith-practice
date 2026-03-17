@@ -4,7 +4,8 @@ import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+if (!API_BASE) throw new Error("NEXT_PUBLIC_API_URL is not set");
 
 export default function RegisterPage() {
   const router = useRouter();

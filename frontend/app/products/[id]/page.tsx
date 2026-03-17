@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
+import { apiFetch } from "@/lib/api";
 import DeleteButton from "./DeleteButton";
 
 type Product = {
@@ -10,10 +11,10 @@ type Product = {
   user_id: number;
 };
 
+// データ取得・認証判定はサーバー側で行うべき by claude（ブラウザに機密情報を渡さない、APIキーを隠蔽する）。
+// onClickなどのイベントハンドラもhooksも使わないためClient Componentにする理由がない。
 async function fetchProduct(id: string): Promise<Product | null> {
-  const apiUrl = process.env.INTERNAL_API_URL;
-  if (!apiUrl) throw new Error("INTERNAL_API_URL is not set");
-  const res = await fetch(`${apiUrl}/api/v1/products/${id}`, { cache: "no-store" });
+  const res = await apiFetch(`/api/v1/products/${id}`, { cache: "no-store" });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error("商品の取得に失敗しました");
   return res.json();

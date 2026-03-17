@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/auth";
+import { apiFetch } from "@/lib/api";
 import DeleteButton from "./[id]/DeleteButton";
 
 type Product = {
@@ -11,9 +12,7 @@ type Product = {
 };
 
 async function fetchProducts(): Promise<Product[]> {
-  const apiUrl = process.env.INTERNAL_API_URL;
-  if (!apiUrl) throw new Error("INTERNAL_API_URL is not set");
-  const res = await fetch(`${apiUrl}/api/v1/products`, { cache: "no-store" });
+  const res = await apiFetch("/api/v1/products", { cache: "no-store" });
   if (!res.ok) throw new Error("商品の取得に失敗しました");
   return res.json();
 }

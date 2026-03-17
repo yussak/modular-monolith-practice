@@ -1,9 +1,9 @@
 import { auth } from "@/auth";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
-const INTERNAL_API_URL = process.env.INTERNAL_API_URL ?? "http://backend:3000";
-
 export async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
+  const internalApiUrl = process.env.INTERNAL_API_URL;
+  if (!internalApiUrl) throw new Error("INTERNAL_API_URL is not set");
+
   const session = await auth();
   const token = (session as { apiToken?: string } | null)?.apiToken;
   const headers: HeadersInit = {
@@ -11,7 +11,5 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(options.headers ?? {}),
   };
-  return fetch(`${INTERNAL_API_URL}${path}`, { ...options, headers });
+  return fetch(`${internalApiUrl}${path}`, { ...options, headers });
 }
-
-export { API_BASE };
