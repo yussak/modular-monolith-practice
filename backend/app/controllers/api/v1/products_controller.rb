@@ -12,6 +12,14 @@ module Api
       rescue ActiveRecord::RecordNotFound
         render json: { error: "商品が見つかりません" }, status: :not_found
       end
+
+      def destroy
+        product = Product.find(params[:id])
+        product.destroy
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: "商品が見つかりません" }, status: :not_found
+      end
     end
   end
 end
