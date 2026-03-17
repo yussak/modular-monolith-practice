@@ -26,6 +26,101 @@ RSpec.describe "Api::V1::Products", type: :request do
     end
   end
 
+  describe "DELETE /api/v1/products/:id" do
+    let!(:owner) { User.create!(name: "出品者", email: "owner@example.com", password: "password123") }
+    let!(:other) { User.create!(name: "他ユーザー", email: "other@example.com", password: "password123") }
+    let!(:product) { Product.create!(name: "削除対象商品", description: "説明", price: 1000, user: owner) }
+
+    def auth_header(user)
+      token = JwtHelper.encode(user_id: user.id)
+      { "Authorization" => "Bearer #{token}" }
+    end
+
+    context "出品者本人の場合" do
+      it "204 を返し商品が削除される" do
+        delete "/api/v1/products/#{product.id}", headers: auth_header(owner), as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(Product.find_by(id: product.id)).to be_nil
+      end
+    end
+
+    context "他のユーザーの場合" do
+      it "403 を返す" do
+        delete "/api/v1/products/#{product.id}", headers: auth_header(other), as: :json
+
+        expect(response).to have_http_status(:forbidden)
+        expect(Product.find_by(id: product.id)).not_to be_nil
+      end
+    end
+
+    context "未認証の場合" do
+      it "401 を返す" do
+        delete "/api/v1/products/#{product.id}", as: :json
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+
+    context "存在しない ID の場合" do
+      it "404 を返す" do
+        delete "/api/v1/products/99999", headers: auth_header(owner), as: :json
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+
+  describe "POST /api/v1/products" do
+    let(:headers) { { "Authorization" => "Bearer #{JwtHelper.encode({ user_id: user.id })}" } }
+
+    context "認証済みの場合" do
+      context "正常なパラメータの場合" do
+        it "201 と作成した商品を返す" do
+          post "/api/v1/products", params: { name: "新商品", price: 1500 }, headers: headers, as: :json
+
+          expect(response).to have_http_status(:created)
+
+          body = JSON.parse(response.body)
+          expect(body).to include("name" => "新商品", "price" => 1500, "user_id" => user.id)
+        end
+
+        it "description なしでも作成できる" do
+          post "/api/v1/products", params: { name: "説明なし商品", price: 500 }, headers: headers, as: :json
+
+          expect(response).to have_http_status(:created)
+          expect(JSON.parse(response.body)["description"]).to be_nil
+        end
+      end
+
+      context "name が空の場合" do
+        it "422 を返す" do
+          post "/api/v1/products", params: { name: "", price: 1500 }, headers: headers, as: :json
+
+          expect(response).to have_http_status(:unprocessable_entity)
+          expect(JSON.parse(response.body)).to have_key("errors")
+        end
+      end
+
+      context "price が負の値の場合" do
+        it "422 を返す" do
+          post "/api/v1/products", params: { name: "商品", price: -1 }, headers: headers, as: :json
+
+          expect(response).to have_http_status(:unprocessable_entity)
+          expect(JSON.parse(response.body)).to have_key("errors")
+        end
+      end
+    end
+
+    context "未認証の場合" do
+      it "401 を返す" do
+        post "/api/v1/products", params: { name: "新商品", price: 1500 }, as: :json
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+  end
+
   describe "GET /api/v1/products" do
     context "商品が存在する場合" do
       before do
