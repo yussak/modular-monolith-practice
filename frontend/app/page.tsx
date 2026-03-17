@@ -1,3 +1,4 @@
+import Link from "next/link";
 import LogoutButton from "./_components/LogoutButton";
 
 async function fetchHealth() {
@@ -20,20 +21,11 @@ export default async function Home() {
   return (
     <main style={{ padding: "2rem", fontFamily: "sans-serif" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h1>EC Site - Modular Monolith Practice</h1>
         <LogoutButton />
       </div>
-      <h2>Rails API 疎通確認</h2>
-      {data ? (
-        <div style={{ color: "green" }}>
-          <p>ステータス: {data.status}</p>
-          <p>メッセージ: {data.message}</p>
-        </div>
-      ) : (
-        <div style={{ color: "red" }}>
-          <p>エラー: {error}</p>
-        </div>
-      )}
+      <Link href="/products/" style={{ display: "inline-block", marginBottom: "1rem" }}>
+        <h2>商品一覧</h2>
+      </Link>
     </main>
   );
 }
