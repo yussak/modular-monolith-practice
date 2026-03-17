@@ -22,6 +22,9 @@ export default async function ProductsPage() {
   return (
     <main style={{ padding: "2rem", fontFamily: "sans-serif" }}>
       <h1>商品一覧</h1>
+      <Link href="/products/new" style={{ display: "inline-block", marginBottom: "1rem" }}>
+        新規作成
+      </Link>
       {products.length === 0 ? (
         <p>商品がありません</p>
       ) : (
