@@ -26,6 +26,51 @@ RSpec.describe "Api::V1::Products", type: :request do
     end
   end
 
+  describe "DELETE /api/v1/products/:id" do
+    let!(:owner) { User.create!(name: "出品者", email: "owner@example.com", password: "password123") }
+    let!(:other) { User.create!(name: "他ユーザー", email: "other@example.com", password: "password123") }
+    let!(:product) { Product.create!(name: "削除対象商品", description: "説明", price: 1000, user: owner) }
+
+    def auth_header(user)
+      token = JwtHelper.encode(user_id: user.id)
+      { "Authorization" => "Bearer #{token}" }
+    end
+
+    context "出品者本人の場合" do
+      it "204 を返し商品が削除される" do
+        delete "/api/v1/products/#{product.id}", headers: auth_header(owner), as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(Product.find_by(id: product.id)).to be_nil
+      end
+    end
+
+    context "他のユーザーの場合" do
+      it "403 を返す" do
+        delete "/api/v1/products/#{product.id}", headers: auth_header(other), as: :json
+
+        expect(response).to have_http_status(:forbidden)
+        expect(Product.find_by(id: product.id)).not_to be_nil
+      end
+    end
+
+    context "未認証の場合" do
+      it "401 を返す" do
+        delete "/api/v1/products/#{product.id}", as: :json
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+
+    context "存在しない ID の場合" do
+      it "404 を返す" do
+        delete "/api/v1/products/99999", headers: auth_header(owner), as: :json
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+
   describe "POST /api/v1/products" do
     let(:headers) { { "Authorization" => "Bearer #{JwtHelper.encode({ user_id: user.id })}" } }
 
