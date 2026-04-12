@@ -20,9 +20,9 @@
 クーポン・割引
 
 マイグレーション
-- [ ] coupons テーブル作成
-- [ ] coupon_uses テーブル作成
-- [ ] orders テーブルに discount_amount カラム追加
+- [x] coupons テーブル作成
+- [x] coupon_uses テーブル作成
+- [x] orders テーブルに discount_amount カラム追加
 
 モデル作成 + リレーション設定
 - [ ] Coupon（Product との belongs_to）
