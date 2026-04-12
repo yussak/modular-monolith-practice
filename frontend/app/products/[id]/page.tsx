@@ -28,7 +28,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   if (!product) notFound();
 
   const currentUserId = (session?.user as { id?: string } | undefined)?.id;
-  const canDelete = currentUserId === String(product.user_id);
+  const isOwner = currentUserId === String(product.user_id);
 
   return (
     <main style={{ padding: "2rem", fontFamily: "sans-serif" }}>
@@ -36,7 +36,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       <p>価格: {product.price}円</p>
       {product.description && <p>説明: {product.description}</p>}
       <AddToCartButton productId={product.id} />
-      {canDelete && <DeleteButton productId={product.id} />}
+      {isOwner && <a href={`/products/${product.id}/edit`}>編集</a>}
+      {isOwner && <DeleteButton productId={product.id} />}
     </main>
   );
 }

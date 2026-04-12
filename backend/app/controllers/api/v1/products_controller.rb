@@ -1,7 +1,7 @@
 module Api
   module V1
     class ProductsController < ApplicationController
-      before_action :authenticate_user!, only: [ :create ]
+      before_action :authenticate_user!, only: [ :create, :update ]
 
       def index
         products = Product.all
@@ -26,6 +26,21 @@ module Api
 
         product.destroy
         render json: {}, status: :ok
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: "商品が見つかりません" }, status: :not_found
+      end
+
+      def update
+        product = Product.find(params[:id])
+        if product.user_id != @current_user.id
+          return render json: { error: "権限がありません" }, status: :forbidden
+        end
+
+        if product.update(product_params)
+          render json: product
+        else
+          render json: { errors: product.errors.full_messages }, status: :unprocessable_entity
+        end
       rescue ActiveRecord::RecordNotFound
         render json: { error: "商品が見つかりません" }, status: :not_found
       end
