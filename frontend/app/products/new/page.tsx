@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, FormEvent } from "react";
+import Link from "next/link";
 import { createProduct } from "./actions";
 
 export default function NewProductPage() {
@@ -62,7 +63,7 @@ export default function NewProductPage() {
         <button type="submit">登録する</button>
       </form>
       <p>
-        <a href="/products">商品一覧に戻る</a>
+        <Link href="/products">商品一覧に戻る</Link>
       </p>
     </main>
   );
