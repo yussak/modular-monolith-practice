@@ -37,6 +37,9 @@ docker compose exec -e RAILS_ENV=test backend rspec
 
 # フロントエンド開発サーバー（ローカル直接実行の場合）
 cd frontend && npm run dev
+
+# フロントエンド lint（ESLint）
+cd frontend && npm run lint
 ```
 
 ## Claudeへの指示
