@@ -54,7 +54,7 @@ GitHub Actions で lint + test の CI を整備する。
 
 ### Frontend
 
-- [ ] ESLint 導入 (lint)
+- [x] ESLint 導入 (lint)
 - [ ] vitest (test)
 
 コメントアウトで残す候補:
