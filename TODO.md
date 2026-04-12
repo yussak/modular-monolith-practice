@@ -50,13 +50,14 @@ GitHub Actions で lint + test の CI を整備する。
 
 コメントアウトで残す候補:
 - [x] brakeman (セキュリティ静的解析)
-- [ ] bundler-audit (gem 脆弱性チェック)
+- [x] bundler-audit (gem 脆弱性チェック)
 - [x] dependabot
 
 ### Frontend
 
 - [x] ESLint 導入 (lint)
 - [x] vitest (test)
+- [x] npm audit (脆弱性チェック)
 
 コメントアウトで残す候補:
 - [ ] tsc --noEmit (型チェック)
