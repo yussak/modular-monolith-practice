@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { apiFetch } from "@/lib/api";
 import DeleteButton from "./DeleteButton";
+import AddToCartButton from "../../cart/AddToCartButton";
 
 type Product = {
   id: number;
@@ -34,6 +35,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       <h1>{product.name}</h1>
       <p>価格: {product.price}円</p>
       {product.description && <p>説明: {product.description}</p>}
+      <AddToCartButton productId={product.id} />
       {canDelete && <DeleteButton productId={product.id} />}
     </main>
   );

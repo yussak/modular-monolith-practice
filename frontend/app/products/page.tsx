@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { apiFetch } from "@/lib/api";
 import DeleteButton from "./[id]/DeleteButton";
 import NewProductButton from "./NewProductButton";
+import AddToCartButton from "../cart/AddToCartButton";
 
 type Product = {
   id: number;
@@ -37,6 +38,7 @@ export default async function ProductsPage() {
               </Link>{" "}
               — {product.price}円
               {product.description && <p>{product.description}</p>}
+              <AddToCartButton productId={product.id} />
               {currentUserId === String(product.user_id) && <DeleteButton productId={product.id} />}
               <span>デバッグ用：user_id={product.user_id}</span>
             </li>
