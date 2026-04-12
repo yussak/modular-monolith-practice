@@ -23,3 +23,26 @@
 
 通知
 - [ ] a
+
+---
+
+## CI整備
+
+GitHub Actions で lint + test の CI を整備する。
+
+### Backend
+
+- [x] rubocop (lint)
+- [ ] rspec (test) — PostgreSQL service container が必要
+
+コメントアウトで残す候補:
+- [ ] brakeman (セキュリティ静的解析)
+- [ ] bundler-audit (gem 脆弱性チェック)
+
+### Frontend
+
+- [ ] ESLint 導入 (lint)
+- [ ] vitest (test)
+
+コメントアウトで残す候補:
+- [ ] tsc --noEmit (型チェック)
