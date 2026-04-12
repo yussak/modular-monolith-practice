@@ -2,14 +2,16 @@ name: CI
 
 on:
   # TODO: push部分はデバッグ用。確認できたら削除する
-  # push:
-  #   branches: [main]
-  # paths:
-  #   - "backend/**"
+  push:
+    branches: [main]
+    # paths:
+    #   - "backend/**"
+    #   - "frontend/**"
   pull_request:
     branches: [main]
     paths:
       - "backend/**"
+      - "frontend/**"
 
 jobs:
   backend-lint:
@@ -60,3 +62,19 @@ jobs:
           working-directory: backend
       - run: bundle exec rails db:setup
       - run: bundle exec rspec
+
+  frontend-lint:
+    name: Frontend Lint (ESLint)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
