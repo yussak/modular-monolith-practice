@@ -9,16 +9,11 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
-vi.mock("@/lib/api", () => ({
-  apiFetch: vi.fn(),
+vi.mock("next-auth/react", () => ({
+  signIn: vi.fn(),
 }));
 
-vi.mock("@/lib/auth", () => ({
-  setToken: vi.fn(),
-}));
-
-import { apiFetch } from "@/lib/api";
-import { setToken } from "@/lib/auth";
+import { signIn } from "next-auth/react";
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -33,10 +28,7 @@ describe("LoginPage", () => {
   });
 
   it("正常にログインできるとトップへリダイレクトする", async () => {
-    vi.mocked(apiFetch).mockResolvedValue({
-      ok: true,
-      json: async () => ({ token: "jwt-token" }),
-    } as Response);
+    vi.mocked(signIn).mockResolvedValue({ error: undefined, ok: true, status: 200, url: "" });
 
     render(<LoginPage />);
     await userEvent.type(screen.getByLabelText("メールアドレス"), "test@example.com");
@@ -44,16 +36,17 @@ describe("LoginPage", () => {
     await userEvent.click(screen.getByRole("button", { name: "ログイン" }));
 
     await waitFor(() => {
-      expect(setToken).toHaveBeenCalledWith("jwt-token");
+      expect(signIn).toHaveBeenCalledWith("credentials", {
+        email: "test@example.com",
+        password: "password123",
+        redirect: false,
+      });
       expect(mockPush).toHaveBeenCalledWith("/");
     });
   });
 
   it("ログイン失敗時にエラーメッセージを表示する", async () => {
-    vi.mocked(apiFetch).mockResolvedValue({
-      ok: false,
-      json: async () => ({ error: "Invalid email or password" }),
-    } as Response);
+    vi.mocked(signIn).mockResolvedValue({ error: "CredentialsSignin", ok: false, status: 401, url: "" });
 
     render(<LoginPage />);
     await userEvent.type(screen.getByLabelText("メールアドレス"), "test@example.com");
