@@ -4,7 +4,7 @@ RSpec.describe "Api::V1::Auth", type: :request do
   describe "POST /api/v1/auth/register" do
     context "正常系" do
       it "201 と token を返す" do
-        post "/api/v1/auth/register", params: { email: "test@example.com", password: "password123" }, as: :json
+        post "/api/v1/auth/register", params: { name: "テスト", email: "test@example.com", password: "password123" }, as: :json
         expect(response).to have_http_status(:created)
         expect(JSON.parse(response.body)).to have_key("token")
       end
@@ -12,15 +12,15 @@ RSpec.describe "Api::V1::Auth", type: :request do
 
     context "異常系" do
       it "メール重複のとき 422 を返す" do
-        User.create!(email: "test@example.com", password: "password123")
-        post "/api/v1/auth/register", params: { email: "test@example.com", password: "password123" }, as: :json
+        User.create!(name: "テスト", email: "test@example.com", password: "password123")
+        post "/api/v1/auth/register", params: { name: "テスト2", email: "test@example.com", password: "password123" }, as: :json
         expect(response).to have_http_status(:unprocessable_entity)
       end
     end
   end
 
   describe "POST /api/v1/auth/login" do
-    before { User.create!(email: "test@example.com", password: "password123") }
+    before { User.create!(name: "テスト", email: "test@example.com", password: "password123") }
 
     context "正常系" do
       it "200 と token を返す" do
