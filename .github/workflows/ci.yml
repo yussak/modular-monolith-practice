@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  # TODO: push部分はデバッグ用。確認できたら push トリガーは削除する
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "backend/**"
+
+jobs:
+  backend-lint:
+    name: Backend Lint (RuboCop)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+          working-directory: backend
+      - run: bundle exec rubocop
