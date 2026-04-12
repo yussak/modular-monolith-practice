@@ -1,7 +1,7 @@
 module Api
   module V1
     class ProductsController < ApplicationController
-      before_action :authenticate_user!, only: [:create]
+      before_action :authenticate_user!, only: [ :create ]
 
       def index
         products = Product.all
