@@ -25,10 +25,10 @@
 - [x] orders テーブルに discount_amount カラム追加
 
 モデル作成 + リレーション設定
-- [ ] Coupon（Product との belongs_to）
-- [ ] CouponUse（Coupon, User, Order との belongs_to）
-- [ ] 既存 Product にクーポンリレーション追加
-- [ ] 既存 Order にクーポン関連カラム・リレーション追加
+- [x] Coupon（Product との belongs_to）
+- [x] CouponUse（Coupon, User, Order との belongs_to）
+- [x] 既存 Product にクーポンリレーション追加
+- [x] 既存 Order にクーポン関連カラム・リレーション追加
 
 クーポンを作成する
 - [ ] ルーティング: POST /api/v1/products/:product_id/coupons
