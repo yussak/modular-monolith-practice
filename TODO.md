@@ -47,7 +47,7 @@ GitHub Actions で lint + test の CI を整備する。
 ### Backend
 
 - [x] rubocop (lint)
-- [ ] rspec (test) — PostgreSQL service container が必要
+- [x] rspec (test) — PostgreSQL service container が必要
 
 コメントアウトで残す候補:
 - [ ] brakeman (セキュリティ静的解析)
