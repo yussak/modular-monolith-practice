@@ -49,7 +49,7 @@ GitHub Actions で lint + test の CI を整備する。
 - [x] rspec (test) — PostgreSQL service container が必要
 
 コメントアウトで残す候補:
-- [ ] brakeman (セキュリティ静的解析)
+- [x] brakeman (セキュリティ静的解析)
 - [ ] bundler-audit (gem 脆弱性チェック)
 - [x] dependabot
 

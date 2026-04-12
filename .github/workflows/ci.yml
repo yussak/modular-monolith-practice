@@ -29,6 +29,21 @@ jobs:
           working-directory: backend
       - run: bundle exec rubocop
 
+  backend-security:
+    name: Backend Security (Brakeman)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+          working-directory: backend
+      - run: bundle exec brakeman --no-pager
+
   backend-test:
     name: Backend Test (RSpec)
     runs-on: ubuntu-latest

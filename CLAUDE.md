@@ -35,6 +35,9 @@ docker compose exec backend rails db:migrate
 # テスト実行（RSpec）
 docker compose exec -e RAILS_ENV=test backend rspec
 
+# セキュリティチェック（Brakeman）
+docker compose exec backend bundle exec brakeman
+
 # フロントエンド開発サーバー（ローカル直接実行の場合）
 cd frontend && npm run dev
 
