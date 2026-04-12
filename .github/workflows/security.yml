@@ -1,0 +1,46 @@
+name: Security
+
+on:
+  # TODO: push部分はデバッグ用。確認できたら削除する
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "frontend/**"
+  schedule:
+    - cron: "0 19 * * 0" # 毎週月曜 04:00 JST
+
+jobs:
+  backend-security:
+    name: Backend Security (Brakeman + bundler-audit)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+          working-directory: backend
+      - run: bundle exec brakeman --no-pager
+      - run: bundle exec bundler-audit --update
+
+  frontend-security:
+    name: Frontend Security (npm audit)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm audit --audit-level=high

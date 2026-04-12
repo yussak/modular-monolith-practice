@@ -61,3 +61,9 @@ GitHub Actions で lint + test の CI を整備する。
 
 コメントアウトで残す候補:
 - [ ] tsc --noEmit (型チェック)
+
+### CI改善
+
+- [ ] セキュリティ workflow を別ファイルに分離（security.yml）+ weekly schedule 追加
+- [ ] paths フィルタの per-job 化（frontend 変更で backend job が走る無駄を解消）
+- [ ] push トリガー削除（デバッグ用の一時設定）
