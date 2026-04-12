@@ -2,10 +2,10 @@ name: CI
 
 on:
   # TODO: push部分はデバッグ用。確認できたら削除する
-  push:
-    branches: [main]
-    # paths:
-    #   - "backend/**"
+  # push:
+  #   branches: [main]
+  # paths:
+  #   - "backend/**"
   pull_request:
     branches: [main]
     paths:
