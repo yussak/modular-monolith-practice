@@ -32,8 +32,8 @@ docker compose exec backend rails c
 # マイグレーション
 docker compose exec backend rails db:migrate
 
-# テスト実行
-docker compose exec backend rails test
+# テスト実行（RSpec）
+docker compose exec backend rspec
 
 # フロントエンド開発サーバー（ローカル直接実行の場合）
 cd frontend && npm run dev
