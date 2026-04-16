@@ -9,6 +9,7 @@ on:
     paths:
       - "backend/**"
       - "frontend/**"
+      - ".github/**"
   schedule:
     - cron: "0 19 * * 0" # 毎週月曜 04:00 JST
 
