@@ -12,6 +12,7 @@ on:
     paths:
       - "backend/**"
       - "frontend/**"
+      - ".github/**"
 
 jobs:
   backend-lint:
