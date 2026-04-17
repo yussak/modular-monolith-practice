@@ -12,6 +12,16 @@ updates:
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
+    groups:
+      # Dependabotはデフォルトだとパッケージごとに個別PRを作るため、
+      # react だけ先にmergeされて react-dom と不整合になる瞬間が発生しうる。
+      # これを避けるために明示的にグループ化している。
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
 
   - package-ecosystem: "github-actions"
     directory: "/"
