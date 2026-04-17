@@ -10,9 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     if: github.actor == 'dependabot[bot]'
     steps:
+      # `@v6` や `@v6.0.2` で止めると、Action作者のリポジトリが乗っ取られた際に
+      # タグが書き換えられ、次回のCI実行から悪意あるコードが勝手に動く。
+      # (2025年のtj-actions/changed-files事件で実際に発生。CIのシークレットが流出した)
+      # SHA固定すればコミットは後から書き換え不能なので、この経路を塞げる。
       - name: Dependabot metadata
         id: metadata
-        uses: dependabot/fetch-metadata@v3
+        uses: dependabot/fetch-metadata@ffa630c65fa7e0ecfa0625b5ceda64399aea1b36 # v3.0.0
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
       - name: Enable auto-merge for Dependabot PRs

@@ -22,8 +22,12 @@ jobs:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v6
-      - uses: ruby/setup-ruby@v1
+      # `@v6` や `@v6.0.2` で止めると、Action作者のリポジトリが乗っ取られた際に
+      # タグが書き換えられ、次回のCI実行から悪意あるコードが勝手に動く。
+      # (2025年のtj-actions/changed-files事件で実際に発生。CIのシークレットが流出した)
+      # SHA固定すればコミットは後から書き換え不能なので、この経路を塞げる。
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: ruby/setup-ruby@7372622e62b60b3cb750dcd2b9e32c247ffec26a # v1.302.0
         with:
           ruby-version: "3.4"
           bundler-cache: true
@@ -40,8 +44,8 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: "22"
           cache: "npm"
