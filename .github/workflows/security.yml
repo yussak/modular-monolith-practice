@@ -13,10 +13,14 @@ on:
   schedule:
     - cron: "0 19 * * 0" # 毎週月曜 04:00 JST
 
+permissions: {}
+
 jobs:
   backend-security:
     name: Backend Security (Brakeman + bundler-audit)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: backend
@@ -33,6 +37,8 @@ jobs:
   frontend-security:
     name: Frontend Security (npm audit)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: frontend

@@ -14,10 +14,14 @@ on:
       - "frontend/**"
       - ".github/**"
 
+permissions: {}
+
 jobs:
   backend-lint:
     name: Backend Lint (RuboCop)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: backend
@@ -33,6 +37,8 @@ jobs:
   backend-test:
     name: Backend Test (RSpec)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     services:
       postgres:
         image: postgres:latest
@@ -67,6 +73,8 @@ jobs:
   frontend-lint:
     name: Frontend Lint (ESLint)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: frontend
@@ -83,6 +91,8 @@ jobs:
   frontend-test:
     name: Frontend Test (Vitest)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: frontend
