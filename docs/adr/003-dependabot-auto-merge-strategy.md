@@ -2,7 +2,7 @@
 
 ## ステータス
 
-採用
+採用（一部 [ADR-004](004-dependabot-major-version-ignore.md) で更新）
 
 ## コンテキスト
 
