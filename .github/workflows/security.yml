@@ -1,9 +1,6 @@
 name: Security
 
 on:
-  # TODO: push部分はデバッグ用。確認できたら削除する
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
     paths:
