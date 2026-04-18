@@ -1,4 +1,4 @@
-FROM ruby:3.4-slim
+FROM ruby:3.4-slim@sha256:2a5b7e6df2dd920a361f8872367f56b48a5f1fc842c5b99a8fd73812e72fa382
 
 RUN apt-get update -qq && apt-get install -y \
   build-essential \
