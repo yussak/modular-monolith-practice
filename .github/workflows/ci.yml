@@ -1,28 +1,37 @@
 name: CI
 
 on:
-  # TODO: push部分はデバッグ用。確認できたら削除する
   push:
     branches: [main]
-    # paths:
-    #   - "backend/**"
-    #   - "frontend/**"
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - ".github/**"
   pull_request:
     branches: [main]
     paths:
       - "backend/**"
       - "frontend/**"
+      - ".github/**"
+
+permissions: {}
 
 jobs:
   backend-lint:
     name: Backend Lint (RuboCop)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v4
-      - uses: ruby/setup-ruby@v1
+      # `@v6` や `@v6.0.2` で止めると、Action作者のリポジトリが乗っ取られた際に
+      # タグが書き換えられ、次回のCI実行から悪意あるコードが勝手に動く。
+      # (2025年のtj-actions/changed-files事件で実際に発生。CIのシークレットが流出した)
+      # SHA固定すればコミットは後から書き換え不能なので、この経路を塞げる。
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: ruby/setup-ruby@7372622e62b60b3cb750dcd2b9e32c247ffec26a # v1.302.0
         with:
           ruby-version: "3.4"
           bundler-cache: true
@@ -32,6 +41,8 @@ jobs:
   backend-test:
     name: Backend Test (RSpec)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     services:
       postgres:
         image: postgres:latest
@@ -54,8 +65,8 @@ jobs:
       DB_PASSWORD: password
       RAILS_ENV: test
     steps:
-      - uses: actions/checkout@v4
-      - uses: ruby/setup-ruby@v1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: ruby/setup-ruby@7372622e62b60b3cb750dcd2b9e32c247ffec26a # v1.302.0
         with:
           ruby-version: "3.4"
           bundler-cache: true
@@ -66,12 +77,14 @@ jobs:
   frontend-lint:
     name: Frontend Lint (ESLint)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: "22"
           cache: "npm"
@@ -79,15 +92,37 @@ jobs:
       - run: npm ci
       - run: npm run lint
 
+  frontend-build:
+    name: Frontend Build (Next.js)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      NEXT_PUBLIC_API_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run build
+
   frontend-test:
     name: Frontend Test (Vitest)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: "22"
           cache: "npm"
