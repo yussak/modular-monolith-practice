@@ -245,20 +245,44 @@ RSpec.describe "Api::V1::Coupons", type: :request do
   end
 
   describe "DELETE /api/v1/products/:product_id/coupons/:id" do
+    let!(:coupon) do
+      Coupon.create!(product: product, code: "TODELETE1", discount_type: "fixed", discount_value: 500, expires_at: 1.month.from_now)
+    end
+
     context "出品者本人の場合" do
-      it "クーポンが削除される"
+      it "クーポンが削除される" do
+        expect {
+          delete "/api/v1/products/#{product.id}/coupons/#{coupon.id}", headers: auth_header(seller), as: :json
+        }.to change(Coupon, :count).by(-1)
+
+        expect(response).to have_http_status(:ok)
+      end
     end
 
     context "未認証の場合" do
-      it "認証エラーになる"
+      it "認証エラーになる" do
+        delete "/api/v1/products/#{product.id}/coupons/#{coupon.id}", as: :json
+
+        expect(response).to have_http_status(:unauthorized)
+      end
     end
 
     context "出品者本人でない場合" do
-      it "権限エラーになる"
+      it "権限エラーになる" do
+        expect {
+          delete "/api/v1/products/#{product.id}/coupons/#{coupon.id}", headers: auth_header(other_user), as: :json
+        }.not_to change(Coupon, :count)
+
+        expect(response).to have_http_status(:forbidden)
+      end
     end
 
     context "存在しないクーポンの場合" do
-      it "クーポンが見つからない"
+      it "クーポンが見つからない" do
+        delete "/api/v1/products/#{product.id}/coupons/99999", headers: auth_header(seller), as: :json
+
+        expect(response).to have_http_status(:not_found)
+      end
     end
   end
 end

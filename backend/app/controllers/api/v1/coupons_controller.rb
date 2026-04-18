@@ -51,6 +51,18 @@ module Api
         render json: { error: "クーポンが見つかりません" }, status: :not_found
       end
 
+      def destroy
+        coupon = Coupon.find(params[:id])
+        if coupon.product.user_id != @current_user.id
+          return render json: { error: "権限がありません" }, status: :forbidden
+        end
+
+        coupon.destroy
+        render json: {}, status: :ok
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: "クーポンが見つかりません" }, status: :not_found
+      end
+
       private
 
       def coupon_params

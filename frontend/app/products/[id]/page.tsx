@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { apiFetch } from "@/lib/api";
 import DeleteButton from "./DeleteButton";
+import DeleteCouponButton from "./coupons/DeleteCouponButton";
 import AddToCartButton from "../../cart/AddToCartButton";
 
 type Product = {
@@ -69,6 +70,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
               </p>
               <p>有効期限: {new Date(coupon.expires_at).toLocaleString()}</p>
               <a href={`/products/${product.id}/coupons/${coupon.id}/edit`}>編集</a>
+              <DeleteCouponButton productId={product.id} couponId={coupon.id} />
             </div>
           ))}
         </section>
