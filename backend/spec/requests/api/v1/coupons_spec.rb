@@ -167,4 +167,98 @@ RSpec.describe "Api::V1::Coupons", type: :request do
       end
     end
   end
+
+  describe "PATCH /api/v1/products/:product_id/coupons/:id" do
+    let!(:coupon) do
+      Coupon.create!(product: product, code: "ORIGINAL1", discount_type: "fixed", discount_value: 500, expires_at: 1.month.from_now)
+    end
+
+    context "出品者本人の場合" do
+      it "discount_value が更新できる" do
+        patch "/api/v1/products/#{product.id}/coupons/#{coupon.id}", params: { discount_value: 800 }, headers: auth_header(seller), as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(coupon.reload.discount_value).to eq(800)
+      end
+
+      it "expires_at が更新できる" do
+        new_expires_at = 2.months.from_now
+        patch "/api/v1/products/#{product.id}/coupons/#{coupon.id}", params: { expires_at: new_expires_at.iso8601 }, headers: auth_header(seller), as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(coupon.reload.expires_at).to be_within(1.second).of(new_expires_at)
+      end
+
+      it "discount_type が更新できる" do
+        patch "/api/v1/products/#{product.id}/coupons/#{coupon.id}", params: { discount_type: "percentage", discount_value: 10 }, headers: auth_header(seller), as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(coupon.reload.discount_type).to eq("percentage")
+      end
+
+      it "code は更新できない" do
+        patch "/api/v1/products/#{product.id}/coupons/#{coupon.id}", params: { code: "NEWCODE12" }, headers: auth_header(seller), as: :json
+
+        expect(coupon.reload.code).to eq("ORIGINAL1")
+      end
+    end
+
+    context "未認証の場合" do
+      it "認証エラーになる" do
+        patch "/api/v1/products/#{product.id}/coupons/#{coupon.id}", params: { discount_value: 800 }, as: :json
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+
+    context "出品者本人でない場合" do
+      it "権限エラーになる" do
+        patch "/api/v1/products/#{product.id}/coupons/#{coupon.id}", params: { discount_value: 800 }, headers: auth_header(other_user), as: :json
+
+        expect(response).to have_http_status(:forbidden)
+        expect(coupon.reload.discount_value).to eq(500)
+      end
+    end
+
+    context "存在しないクーポンの場合" do
+      it "クーポンが見つからない" do
+        patch "/api/v1/products/#{product.id}/coupons/99999", params: { discount_value: 800 }, headers: auth_header(seller), as: :json
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+
+    context "不正なパラメータの場合" do
+      it "discount_value が 0 以下なら更新できない" do
+        patch "/api/v1/products/#{product.id}/coupons/#{coupon.id}", params: { discount_value: 0 }, headers: auth_header(seller), as: :json
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(coupon.reload.discount_value).to eq(500)
+      end
+
+      it "percentage で 100 を超える場合は更新できない" do
+        patch "/api/v1/products/#{product.id}/coupons/#{coupon.id}", params: { discount_type: "percentage", discount_value: 101 }, headers: auth_header(seller), as: :json
+
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+    end
+  end
+
+  describe "DELETE /api/v1/products/:product_id/coupons/:id" do
+    context "出品者本人の場合" do
+      it "クーポンが削除される"
+    end
+
+    context "未認証の場合" do
+      it "認証エラーになる"
+    end
+
+    context "出品者本人でない場合" do
+      it "権限エラーになる"
+    end
+
+    context "存在しないクーポンの場合" do
+      it "クーポンが見つからない"
+    end
+  end
 end

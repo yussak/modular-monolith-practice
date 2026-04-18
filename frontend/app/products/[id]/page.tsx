@@ -68,6 +68,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                 {coupon.discount_type === "fixed" ? "円" : "%"}
               </p>
               <p>有効期限: {new Date(coupon.expires_at).toLocaleString()}</p>
+              <a href={`/products/${product.id}/coupons/${coupon.id}/edit`}>編集</a>
             </div>
           ))}
         </section>
