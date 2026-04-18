@@ -108,4 +108,63 @@ RSpec.describe "Api::V1::Coupons", type: :request do
       end
     end
   end
+
+  describe "GET /api/v1/products/:product_id/coupons" do
+    context "出品者本人の場合" do
+      context "クーポンが存在する場合" do
+        let!(:coupon) do
+          Coupon.create!(product: product, code: "SUMMER2026", discount_type: "fixed", discount_value: 500, expires_at: 1.month.from_now)
+        end
+
+        it "クーポン情報が取得できる" do
+          get "/api/v1/products/#{product.id}/coupons", headers: auth_header(seller), as: :json
+
+          expect(response).to have_http_status(:ok)
+
+          body = JSON.parse(response.body)
+          expect(body).to be_an(Array)
+          expect(body.length).to eq(1)
+          expect(body.first).to include(
+            "code" => "SUMMER2026",
+            "discount_type" => "fixed",
+            "discount_value" => 500,
+            "product_id" => product.id
+          )
+        end
+      end
+
+      context "クーポンが存在しない場合" do
+        it "空の結果が返る" do
+          get "/api/v1/products/#{product.id}/coupons", headers: auth_header(seller), as: :json
+
+          expect(response).to have_http_status(:ok)
+          expect(JSON.parse(response.body)).to eq([])
+        end
+      end
+    end
+
+    context "未認証の場合" do
+      it "認証エラーになる" do
+        get "/api/v1/products/#{product.id}/coupons", as: :json
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+
+    context "出品者本人でない場合" do
+      it "権限エラーになる" do
+        get "/api/v1/products/#{product.id}/coupons", headers: auth_header(other_user), as: :json
+
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+
+    context "存在しない商品の場合" do
+      it "商品が見つからない" do
+        get "/api/v1/products/99999/coupons", headers: auth_header(seller), as: :json
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
 end

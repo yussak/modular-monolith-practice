@@ -3,6 +3,17 @@ module Api
     class CouponsController < ApplicationController
       before_action :authenticate_user!
 
+      def index
+        product = Product.find(params[:product_id])
+        if product.user_id != @current_user.id
+          return render json: { error: "権限がありません" }, status: :forbidden
+        end
+
+        render json: Array(product.coupon).compact
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: "商品が見つかりません" }, status: :not_found
+      end
+
       def create
         product = Product.find(params[:product_id])
         if product.user_id != @current_user.id
