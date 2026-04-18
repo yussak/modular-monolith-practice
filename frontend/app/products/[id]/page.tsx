@@ -37,6 +37,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       {product.description && <p>説明: {product.description}</p>}
       <AddToCartButton productId={product.id} />
       {isOwner && <a href={`/products/${product.id}/edit`}>編集</a>}
+      {isOwner && <a href={`/products/${product.id}/coupons/new`}>クーポン作成</a>}
       {isOwner && <DeleteButton productId={product.id} />}
     </main>
   );

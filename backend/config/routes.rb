@@ -7,7 +7,9 @@ Rails.application.routes.draw do
       post "auth/register", to: "auth#register"
       post "auth/login", to: "auth#login"
       delete "auth/logout", to: "auth#logout"
-      resources :products
+      resources :products do
+        resources :coupons, only: [ :create ]
+      end
 
       resource :cart, only: [ :show ] do
         resources :items, only: [ :create, :update, :destroy ], controller: "cart_items"
