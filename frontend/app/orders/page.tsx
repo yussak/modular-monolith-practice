@@ -7,6 +7,8 @@ type OrderSummary = {
   id: number;
   order_number: string;
   status: string;
+  subtotal: number;
+  discount_amount: number;
   total: number;
   created_at: string;
 };
@@ -55,7 +57,14 @@ export default async function OrdersPage() {
                   </Link>
                 </td>
                 <td style={{ padding: "0.5rem" }}>{new Date(order.created_at).toLocaleString("ja-JP")}</td>
-                <td style={{ textAlign: "right", padding: "0.5rem" }}>{order.total}円</td>
+                <td style={{ textAlign: "right", padding: "0.5rem" }}>
+                  {order.total}円
+                  {order.discount_amount > 0 && (
+                    <span style={{ fontSize: "0.8em", color: "#888", marginLeft: "0.3rem" }}>
+                      (-{order.discount_amount}円)
+                    </span>
+                  )}
+                </td>
                 <td style={{ padding: "0.5rem" }}>{statusLabel(order.status)}</td>
               </tr>
             ))}

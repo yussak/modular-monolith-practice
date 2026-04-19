@@ -3,7 +3,7 @@ class Product < ApplicationRecord
   has_many :product_images, dependent: :destroy
   has_many :cart_items, dependent: :destroy
   has_many :order_items, dependent: :nullify
-  has_many :coupons, dependent: :destroy
+  has_one :coupon, dependent: :destroy
 
   enum :status, { active: "active", deleted: "deleted" }
 

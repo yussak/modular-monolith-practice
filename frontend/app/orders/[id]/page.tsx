@@ -18,6 +18,8 @@ type OrderDetail = {
   order_number: string;
   status: string;
   items: OrderItem[];
+  subtotal: number;
+  discount_amount: number;
   total: number;
   created_at: string;
 };
@@ -77,9 +79,15 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         </tbody>
       </table>
 
-      <p style={{ fontSize: "1.2rem", fontWeight: "bold", marginTop: "1rem" }}>
-        合計: {order.total}円
-      </p>
+      <div style={{ marginTop: "1rem", textAlign: "right" }}>
+        <p>小計: {order.subtotal}円</p>
+        {order.discount_amount > 0 && (
+          <p>クーポン割引: -{order.discount_amount}円</p>
+        )}
+        <p style={{ fontSize: "1.2rem", fontWeight: "bold" }}>
+          合計: {order.total}円
+        </p>
+      </div>
 
       {order.status === "confirmed" && <CancelOrderButton orderId={order.id} />}
 
