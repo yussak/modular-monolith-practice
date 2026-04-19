@@ -26,11 +26,25 @@ module Api
           return render json: { error: "注文可能な商品がありません" }, status: :unprocessable_entity
         end
 
+        coupon = nil
+        if params[:coupon_code].present?
+          coupon = Coupon.find_by(code: params[:coupon_code])
+          if coupon.nil? || !coupon.valid_for_use_by?(@current_user)
+            return render json: { error: "クーポンが無効です" }, status: :unprocessable_entity
+          end
+          unless active_items.any? { |item| item.product_id == coupon.product_id }
+            return render json: { error: "対象商品がカートにありません" }, status: :unprocessable_entity
+          end
+        end
+
         order = nil
         ActiveRecord::Base.transaction do
+          discount_amount = coupon ? coupon.discount_amount_for(active_items) : 0
+
           order = @current_user.orders.create!(
             order_number: SecureRandom.uuid,
-            status: :confirmed
+            status: :confirmed,
+            discount_amount: discount_amount
           )
 
           active_items.each do |cart_item|
@@ -40,6 +54,10 @@ module Api
               unit_price: cart_item.product.price,
               quantity: cart_item.quantity
             )
+          end
+
+          if coupon
+            CouponUse.create!(coupon: coupon, user: @current_user, order: order, status: :used)
           end
 
           cart.cart_items.destroy_all
@@ -64,11 +82,14 @@ module Api
       private
 
       def order_summary_json(order)
+        subtotal = order.order_items.sum { |item| item.unit_price * item.quantity }
         {
           id: order.id,
           order_number: order.order_number,
           status: order.status,
-          total: order.order_items.sum { |item| item.unit_price * item.quantity },
+          subtotal: subtotal,
+          discount_amount: order.discount_amount,
+          total: subtotal - order.discount_amount,
           created_at: order.created_at
         }
       end
@@ -85,12 +106,15 @@ module Api
           }
         end
 
+        subtotal = items.sum { |i| i[:subtotal] }
         {
           id: order.id,
           order_number: order.order_number,
           status: order.status,
           items: items,
-          total: items.sum { |i| i[:subtotal] },
+          subtotal: subtotal,
+          discount_amount: order.discount_amount,
+          total: subtotal - order.discount_amount,
           created_at: order.created_at
         }
       end

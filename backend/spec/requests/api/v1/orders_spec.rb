@@ -71,6 +71,160 @@ RSpec.describe "Api::V1::Orders", type: :request do
         expect(response).to have_http_status(:unauthorized)
       end
     end
+
+    context "クーポンを適用する場合" do
+      let!(:seller) { User.create!(name: "出品者", email: "seller-coupon@example.com", password: "password123") }
+      let!(:coupon_product) { Product.create!(name: "対象商品", price: 1000, user: seller) }
+
+      context "固定額クーポン" do
+        let!(:coupon) do
+          Coupon.create!(product: coupon_product, code: "FIXED300", discount_type: "fixed", discount_value: 300, expires_at: 1.month.from_now)
+        end
+
+        before do
+          cart = user.create_cart!
+          cart.cart_items.create!(product: coupon_product, quantity: 1)
+        end
+
+        it "割引額が適用され coupon_use が記録される" do
+          expect {
+            post "/api/v1/orders", params: { coupon_code: "FIXED300" }, headers: headers, as: :json
+          }.to change(CouponUse, :count).by(1)
+
+          expect(response).to have_http_status(:created)
+
+          order = Order.last
+          expect(order.discount_amount).to eq(300)
+
+          coupon_use = CouponUse.last
+          expect(coupon_use.user_id).to eq(user.id)
+          expect(coupon_use.coupon_id).to eq(coupon.id)
+          expect(coupon_use.order_id).to eq(order.id)
+          expect(coupon_use.status).to eq("used")
+        end
+
+        it "レスポンスに subtotal/discount_amount/total が含まれる" do
+          post "/api/v1/orders", params: { coupon_code: "FIXED300" }, headers: headers, as: :json
+
+          body = JSON.parse(response.body)
+          expect(body["subtotal"]).to eq(1000)
+          expect(body["discount_amount"]).to eq(300)
+          expect(body["total"]).to eq(700)
+        end
+
+        it "対象商品を複数個カートに入れた場合、合計金額に対して割引" do
+          user.cart.cart_items.first.update!(quantity: 3)
+
+          post "/api/v1/orders", params: { coupon_code: "FIXED300" }, headers: headers, as: :json
+
+          expect(Order.last.discount_amount).to eq(300)
+        end
+
+        it "割引額が商品価格を超える場合は商品価格までに制限される" do
+          coupon.update!(discount_value: 2000)
+
+          post "/api/v1/orders", params: { coupon_code: "FIXED300" }, headers: headers, as: :json
+
+          expect(Order.last.discount_amount).to eq(1000)
+        end
+      end
+
+      context "割合クーポン" do
+        let!(:coupon) do
+          Coupon.create!(product: coupon_product, code: "PERCENT10", discount_type: "percentage", discount_value: 10, expires_at: 1.month.from_now)
+        end
+
+        before do
+          cart = user.create_cart!
+          cart.cart_items.create!(product: coupon_product, quantity: 1)
+        end
+
+        it "商品金額に対して割引率が適用される" do
+          post "/api/v1/orders", params: { coupon_code: "PERCENT10" }, headers: headers, as: :json
+
+          expect(Order.last.discount_amount).to eq(100)
+        end
+
+        it "割引率 100% なら商品価格と同じ割引額" do
+          coupon.update!(discount_value: 100)
+
+          post "/api/v1/orders", params: { coupon_code: "PERCENT10" }, headers: headers, as: :json
+
+          expect(Order.last.discount_amount).to eq(1000)
+        end
+      end
+
+      context "クーポンが無効な場合" do
+        before do
+          cart = user.create_cart!
+          cart.cart_items.create!(product: coupon_product, quantity: 1)
+        end
+
+        it "存在しないコードならエラー" do
+          expect {
+            post "/api/v1/orders", params: { coupon_code: "NOTEXIST" }, headers: headers, as: :json
+          }.not_to change(Order, :count)
+
+          expect(response).to have_http_status(:unprocessable_entity)
+        end
+
+        it "期限切れクーポンならエラー" do
+          Coupon.create!(product: coupon_product, code: "EXPIRED01", discount_type: "fixed", discount_value: 300, expires_at: 1.day.ago)
+
+          expect {
+            post "/api/v1/orders", params: { coupon_code: "EXPIRED01" }, headers: headers, as: :json
+          }.not_to change(Order, :count)
+
+          expect(response).to have_http_status(:unprocessable_entity)
+        end
+
+        it "同ユーザーが2回目使うとエラー" do
+          coupon = Coupon.create!(product: coupon_product, code: "ONCE12345", discount_type: "fixed", discount_value: 300, expires_at: 1.month.from_now)
+          first_order = user.orders.create!(order_number: SecureRandom.uuid, status: :confirmed)
+          CouponUse.create!(coupon: coupon, user: user, order: first_order, status: :used)
+
+          expect {
+            post "/api/v1/orders", params: { coupon_code: "ONCE12345" }, headers: headers, as: :json
+          }.not_to change(Order, :count)
+
+          expect(response).to have_http_status(:unprocessable_entity)
+        end
+      end
+
+      context "対象商品がカートにない場合" do
+        let!(:coupon) do
+          Coupon.create!(product: coupon_product, code: "NOTARGET1", discount_type: "fixed", discount_value: 300, expires_at: 1.month.from_now)
+        end
+
+        before do
+          cart = user.create_cart!
+          cart.cart_items.create!(product: product, quantity: 1)
+        end
+
+        it "エラーになる" do
+          expect {
+            post "/api/v1/orders", params: { coupon_code: "NOTARGET1" }, headers: headers, as: :json
+          }.not_to change(Order, :count)
+
+          expect(response).to have_http_status(:unprocessable_entity)
+        end
+      end
+
+      context "クーポンコードなしの場合" do
+        before do
+          cart = user.create_cart!
+          cart.cart_items.create!(product: coupon_product, quantity: 1)
+        end
+
+        it "通常通り注文できる（discount_amount は 0）" do
+          post "/api/v1/orders", headers: headers, as: :json
+
+          expect(response).to have_http_status(:created)
+          expect(Order.last.discount_amount).to eq(0)
+          expect(CouponUse.count).to eq(0)
+        end
+      end
+    end
   end
 
   describe "PATCH /api/v1/orders/:id/cancel" do
@@ -119,7 +273,19 @@ RSpec.describe "Api::V1::Orders", type: :request do
 
       body = JSON.parse(response.body)
       expect(body.length).to eq(2)
-      expect(body.first).to include("order_number", "status", "total", "created_at")
+      expect(body.first).to include("order_number", "status", "total", "discount_amount", "created_at")
+    end
+
+    it "割引が適用された注文は total が割引後の金額になる" do
+      discounted = user.orders.create!(order_number: SecureRandom.uuid, status: :confirmed, discount_amount: 150)
+      discounted.order_items.create!(product: product, product_name: "商品A", unit_price: 1000, quantity: 1)
+
+      get "/api/v1/orders", headers: headers, as: :json
+
+      body = JSON.parse(response.body)
+      entry = body.find { |o| o["order_number"] == discounted.order_number }
+      expect(entry["discount_amount"]).to eq(150)
+      expect(entry["total"]).to eq(850)
     end
 
     it "未認証なら401を返す" do
@@ -146,6 +312,23 @@ RSpec.describe "Api::V1::Orders", type: :request do
       expect(body["items"].length).to eq(1)
       expect(body["items"].first["product_name"]).to eq("商品A")
       expect(body["total"]).to eq(2000)
+    end
+
+    context "割引が適用された注文の場合" do
+      let!(:discounted_order) do
+        o = user.orders.create!(order_number: SecureRandom.uuid, status: :confirmed, discount_amount: 300)
+        o.order_items.create!(product: product, product_name: "商品A", unit_price: 1000, quantity: 1)
+        o
+      end
+
+      it "subtotal/discount_amount/total を返す" do
+        get "/api/v1/orders/#{discounted_order.id}", headers: headers, as: :json
+
+        body = JSON.parse(response.body)
+        expect(body["subtotal"]).to eq(1000)
+        expect(body["discount_amount"]).to eq(300)
+        expect(body["total"]).to eq(700)
+      end
     end
 
     it "他ユーザーの注文は404を返す" do
