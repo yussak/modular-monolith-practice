@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { auth, signOut } from "@/auth";
 
 export async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
   const internalApiUrl = process.env.INTERNAL_API_URL;
@@ -11,5 +11,9 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(options.headers ?? {}),
   };
-  return fetch(`${internalApiUrl}${path}`, { ...options, headers });
+  const res = await fetch(`${internalApiUrl}${path}`, { ...options, headers });
+  if (res.status === 401) {
+    await signOut({ redirectTo: "/auth/login" });
+  }
+  return res;
 }
