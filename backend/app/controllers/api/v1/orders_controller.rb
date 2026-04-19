@@ -73,7 +73,11 @@ module Api
           return render json: { error: "すでにキャンセル済みです" }, status: :unprocessable_entity
         end
 
-        order.cancelled!
+        ActiveRecord::Base.transaction do
+          order.coupon_use&.destroy!
+          order.cancelled!
+        end
+
         render json: order_detail_json(order)
       rescue ActiveRecord::RecordNotFound
         render json: { error: "注文が見つかりません" }, status: :not_found

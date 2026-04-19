@@ -256,6 +256,36 @@ RSpec.describe "Api::V1::Orders", type: :request do
         expect(response).to have_http_status(:not_found)
       end
     end
+
+    context "クーポンが適用された注文の場合" do
+      let!(:seller) { User.create!(name: "出品者", email: "seller-cancel@example.com", password: "password123") }
+      let!(:coupon_product) { Product.create!(name: "対象商品", price: 1000, user: seller) }
+      let!(:coupon) do
+        Coupon.create!(product: coupon_product, code: "CANCELME12", discount_type: "fixed", discount_value: 300, expires_at: 1.month.from_now)
+      end
+      let!(:coupon_order) do
+        o = user.orders.create!(order_number: SecureRandom.uuid, status: :confirmed, discount_amount: 300)
+        o.order_items.create!(product: coupon_product, product_name: "対象商品", unit_price: 1000, quantity: 1)
+        CouponUse.create!(coupon: coupon, user: user, order: o, status: :used)
+        o
+      end
+
+      it "キャンセル時に coupon_use が削除される" do
+        expect {
+          patch "/api/v1/orders/#{coupon_order.id}/cancel", headers: headers, as: :json
+        }.to change(CouponUse, :count).by(-1)
+      end
+
+      it "キャンセル後、同じユーザーが同じクーポンを再度使える" do
+        patch "/api/v1/orders/#{coupon_order.id}/cancel", headers: headers, as: :json
+
+        cart = user.cart || user.create_cart!
+        cart.cart_items.create!(product: coupon_product, quantity: 1)
+
+        post "/api/v1/orders", params: { coupon_code: "CANCELME12" }, headers: headers, as: :json
+        expect(response).to have_http_status(:created)
+      end
+    end
   end
 
   describe "GET /api/v1/orders" do
