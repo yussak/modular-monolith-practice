@@ -16,3 +16,6 @@ docker-compose.override.yml
 
 
 .cocoindex_code
+
+# Claude Code の worktree 作業領域
+.claude/worktrees/
