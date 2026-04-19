@@ -3,10 +3,9 @@
 import { apiFetch } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 
-export async function placeOrder(couponCode?: string) {
+export async function placeOrder() {
   const res = await apiFetch("/api/v1/orders", {
     method: "POST",
-    body: JSON.stringify(couponCode ? { coupon_code: couponCode } : {}),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error ?? "注文に失敗しました");
