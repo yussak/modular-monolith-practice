@@ -1,11 +1,16 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 const authMock = vi.fn();
-const signOutMock = vi.fn();
+const redirectMock = vi.fn((url: string) => {
+  throw new Error(`NEXT_REDIRECT:${url}`);
+});
 
 vi.mock("@/auth", () => ({
   auth: () => authMock(),
-  signOut: (args: unknown) => signOutMock(args),
+}));
+
+vi.mock("next/navigation", () => ({
+  redirect: (url: string) => redirectMock(url),
 }));
 
 import { apiFetch } from "../api";
@@ -14,7 +19,10 @@ const fetchMock = vi.fn();
 
 beforeEach(() => {
   authMock.mockReset();
-  signOutMock.mockReset();
+  redirectMock.mockReset();
+  redirectMock.mockImplementation((url: string) => {
+    throw new Error(`NEXT_REDIRECT:${url}`);
+  });
   fetchMock.mockReset();
   vi.stubGlobal("fetch", fetchMock);
   process.env.INTERNAL_API_URL = "http://backend:3000";
@@ -29,7 +37,7 @@ describe("apiFetch", () => {
 
     const [, init] = fetchMock.mock.calls[0];
     expect((init.headers as Record<string, string>).Authorization).toBe("Bearer token-abc");
-    expect(signOutMock).not.toHaveBeenCalled();
+    expect(redirectMock).not.toHaveBeenCalled();
   });
 
   it("session が null のとき Authorization ヘッダーを付けない", async () => {
@@ -40,25 +48,24 @@ describe("apiFetch", () => {
 
     const [, init] = fetchMock.mock.calls[0];
     expect((init.headers as Record<string, string>).Authorization).toBeUndefined();
-    expect(signOutMock).not.toHaveBeenCalled();
+    expect(redirectMock).not.toHaveBeenCalled();
   });
 
-  it("401 のとき signOut を /auth/login で呼ぶ", async () => {
+  it("401 のとき /auth/logout へリダイレクトする", async () => {
     authMock.mockResolvedValue({ apiToken: "expired-token" });
     fetchMock.mockResolvedValue(new Response(null, { status: 401 }));
 
-    await apiFetch("/api/v1/products", { method: "POST" });
-
-    expect(signOutMock).toHaveBeenCalledWith({ redirectTo: "/auth/login" });
+    await expect(apiFetch("/api/v1/products", { method: "POST" })).rejects.toThrow("NEXT_REDIRECT:/auth/logout");
+    expect(redirectMock).toHaveBeenCalledWith("/auth/logout");
   });
 
-  it("200 のとき signOut を呼ばない", async () => {
+  it("200 のときリダイレクトしない", async () => {
     authMock.mockResolvedValue({ apiToken: "token" });
     fetchMock.mockResolvedValue(new Response(null, { status: 200 }));
 
     await apiFetch("/api/v1/products");
 
-    expect(signOutMock).not.toHaveBeenCalled();
+    expect(redirectMock).not.toHaveBeenCalled();
   });
 
   it("INTERNAL_API_URL が未設定ならエラー", async () => {

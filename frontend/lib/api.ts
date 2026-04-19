@@ -1,4 +1,5 @@
-import { auth, signOut } from "@/auth";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 
 export async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
   const internalApiUrl = process.env.INTERNAL_API_URL;
@@ -13,7 +14,7 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
   };
   const res = await fetch(`${internalApiUrl}${path}`, { ...options, headers });
   if (res.status === 401) {
-    await signOut({ redirectTo: "/auth/login" });
+    redirect("/auth/logout");
   }
   return res;
 }
