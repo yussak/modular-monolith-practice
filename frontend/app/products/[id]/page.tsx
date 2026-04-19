@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { apiFetch } from "@/lib/api";
 import DeleteButton from "./DeleteButton";
 import DeleteCouponButton from "./coupons/DeleteCouponButton";
+import CopyCouponCodeButton from "./coupons/CopyCouponCodeButton";
 import AddToCartButton from "../../cart/AddToCartButton";
 
 type Product = {
@@ -63,7 +64,10 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           <h2>クーポン</h2>
           {coupons.map((coupon) => (
             <div key={coupon.id} style={{ border: "1px solid #ccc", padding: "1rem", marginBottom: "0.5rem" }}>
-              <p>コード: {coupon.code}</p>
+              <p>
+                コード: {coupon.code}
+                <CopyCouponCodeButton code={coupon.code} />
+              </p>
               <p>
                 割引: {coupon.discount_value}
                 {coupon.discount_type === "fixed" ? "円" : "%"}
