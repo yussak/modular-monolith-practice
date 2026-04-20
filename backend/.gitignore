@@ -17,6 +17,9 @@
 # ビルド成果物
 /public/assets
 
+# テストカバレッジレポート
+/coverage
+
 # 依存関係（Dockerでキャッシュするため）
 /vendor/bundle
 
