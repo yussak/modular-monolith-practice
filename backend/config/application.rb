@@ -28,5 +28,12 @@ module Railsapp
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
+
+    # Modular monolith: register packs/<name>/app/<subdir> as autoload roots.
+    # See docs/adr/007-adopt-modular-monolith.md
+    Dir.glob(File.expand_path("../packs/*/app/*", __dir__)).each do |path|
+      config.autoload_paths << path
+      config.eager_load_paths << path
+    end
   end
 end

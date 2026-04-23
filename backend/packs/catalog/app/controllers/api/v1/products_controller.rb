@@ -1,6 +1,8 @@
 module Api
   module V1
     class ProductsController < ApplicationController
+      include Authenticatable
+
       before_action :authenticate_user!, only: [ :create, :update ]
 
       def index
@@ -46,7 +48,7 @@ module Api
       end
 
       def create
-        product = @current_user.products.new(product_params)
+        product = Product.new(product_params.merge(user: @current_user))
         if product.save
           render json: product, status: :created
         else

@@ -1,22 +1,24 @@
 module Api
   module V1
     class OrdersController < ApplicationController
+      include Authenticatable
+
       before_action :authenticate_user!
 
       def index
-        orders = @current_user.orders.order(created_at: :desc)
+        orders = Order.where(user: @current_user).order(created_at: :desc)
         render json: orders.map { |order| order_summary_json(order) }
       end
 
       def show
-        order = @current_user.orders.find(params[:id])
+        order = Order.find_by!(user: @current_user, id: params[:id])
         render json: order_detail_json(order)
       rescue ActiveRecord::RecordNotFound
         render json: { error: "注文が見つかりません" }, status: :not_found
       end
 
       def create
-        cart = @current_user.cart
+        cart = Cart.find_by(user: @current_user)
         if cart.nil? || cart.cart_items.empty?
           return render json: { error: "カートが空です" }, status: :unprocessable_entity
         end
@@ -41,7 +43,8 @@ module Api
         ActiveRecord::Base.transaction do
           discount_amount = coupon ? coupon.discount_amount_for(active_items) : 0
 
-          order = @current_user.orders.create!(
+          order = Order.create!(
+            user: @current_user,
             order_number: SecureRandom.uuid,
             status: :confirmed,
             discount_amount: discount_amount
@@ -67,7 +70,7 @@ module Api
       end
 
       def cancel
-        order = @current_user.orders.find(params[:id])
+        order = Order.find_by!(user: @current_user, id: params[:id])
 
         if order.cancelled?
           return render json: { error: "すでにキャンセル済みです" }, status: :unprocessable_entity

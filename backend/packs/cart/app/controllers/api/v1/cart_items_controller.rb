@@ -1,10 +1,12 @@
 module Api
   module V1
     class CartItemsController < ApplicationController
+      include Authenticatable
+
       before_action :authenticate_user!
 
       def create
-        cart = @current_user.cart || @current_user.create_cart!
+        cart = Cart.find_or_create_by!(user: @current_user)
         product = Product.active.find(params[:product_id])
 
         cart_item = cart.cart_items.find_by(product: product)
@@ -40,7 +42,7 @@ module Api
       private
 
       def find_cart_item
-        @current_user.cart&.cart_items&.find(params[:id]) || raise(ActiveRecord::RecordNotFound)
+        Cart.find_by(user: @current_user)&.cart_items&.find(params[:id]) || raise(ActiveRecord::RecordNotFound)
       end
     end
   end

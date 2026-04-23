@@ -1,6 +1,8 @@
 module Api
   module V1
     class CouponsController < ApplicationController
+      include Authenticatable
+
       before_action :authenticate_user!
 
       def index

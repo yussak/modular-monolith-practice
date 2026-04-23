@@ -1,0 +1,11 @@
+# Cart pack: カート
+# 公開対象: Cart, CartItem, CartsController, CartItemsController
+# 依存: identity（User）, catalog（Product）, root（ApplicationRecord）
+# See docs/adr/007-adopt-modular-monolith.md
+
+enforce_dependencies: true
+
+dependencies:
+  - "."
+  - "packs/identity"
+  - "packs/catalog"

@@ -1,0 +1,12 @@
+# Marketing pack: 販促・割引（クーポン）
+# 公開対象: Coupon, CouponUse, CouponsController
+# 依存: identity（User）, catalog（Product）, root（ApplicationRecord）
+# 注意: order は marketing に依存するが、その逆は持たない（順序は order → marketing）
+# See docs/adr/007-adopt-modular-monolith.md
+
+enforce_dependencies: true
+
+dependencies:
+  - "."
+  - "packs/identity"
+  - "packs/catalog"

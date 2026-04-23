@@ -19,6 +19,7 @@
 
 # 依存関係（Dockerでキャッシュするため）
 /vendor/bundle
+/.bundle
 
 # デバッグ
 .byebug_history

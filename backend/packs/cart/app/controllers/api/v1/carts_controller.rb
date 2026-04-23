@@ -1,10 +1,12 @@
 module Api
   module V1
     class CartsController < ApplicationController
+      include Authenticatable
+
       before_action :authenticate_user!
 
       def show
-        cart = @current_user.cart
+        cart = Cart.find_by(user: @current_user)
         if cart
           render json: cart_json(cart)
         else

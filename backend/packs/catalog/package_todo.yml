@@ -1,0 +1,26 @@
+# This file contains a list of dependencies that are not part of the long term plan for the
+# 'packs/catalog' package.
+# We should generally work to reduce this list over time.
+#
+# You can regenerate this file using the following command:
+#
+# bin/packwerk update-todo
+---
+packs/cart:
+  "::CartItem":
+    violations:
+    - dependency
+    files:
+    - packs/catalog/app/models/product.rb
+packs/marketing:
+  "::Coupon":
+    violations:
+    - dependency
+    files:
+    - packs/catalog/app/models/product.rb
+packs/order:
+  "::OrderItem":
+    violations:
+    - dependency
+    files:
+    - packs/catalog/app/models/product.rb

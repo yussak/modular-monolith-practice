@@ -1,0 +1,9 @@
+# Identity pack: 認証・アカウント
+# 公開対象: User, JwtHelper, AuthController, Authenticatable concern
+# 依存: root（ApplicationController, ApplicationRecord）
+# See docs/adr/007-adopt-modular-monolith.md
+
+enforce_dependencies: true
+
+dependencies:
+  - "."

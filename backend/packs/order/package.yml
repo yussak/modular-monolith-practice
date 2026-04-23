@@ -1,0 +1,13 @@
+# Order pack: 注文
+# 公開対象: Order, OrderItem, OrdersController
+# 依存: identity（User）, catalog（Product）, cart（Cart）, marketing（Coupon, CouponUse）, root（ApplicationRecord）
+# See docs/adr/007-adopt-modular-monolith.md
+
+enforce_dependencies: true
+
+dependencies:
+  - "."
+  - "packs/identity"
+  - "packs/catalog"
+  - "packs/cart"
+  - "packs/marketing"
