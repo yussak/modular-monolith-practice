@@ -77,5 +77,5 @@ ADR-005（GitHub Actions の SHA Pinning）と同じ趣旨で、PR #68（issue #
 
 - 週1回、Dockerfile / compose の3 image に対して個別に Dependabot PR が作成される
 - `.github/workflows/ci.yml` の `services.postgres.image` は引き続き手動更新対象。Dependabot が compose を更新した際、同じ digest を ci.yml にも反映する運用が必要
-- 上記の二重管理を解消するため、別 issue を起票して案B 相当（ci.yml の services 廃止 + compose 利用）を継続検討する
+- 上記の二重管理を解消するため、issue #79 で案B 相当（ci.yml の services 廃止 + compose 利用）を継続検討する
 - ADR-003 の自動マージ運用により、major 以外の docker image 更新は自動マージ対象となる
