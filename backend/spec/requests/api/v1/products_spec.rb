@@ -148,4 +148,48 @@ RSpec.describe "Api::V1::Products", type: :request do
       end
     end
   end
+
+  describe "PATCH /api/v1/products/:id" do
+    let!(:owner) { User.create!(name: "出品者", email: "owner-update@example.com", password: "password123") }
+    let!(:other) { User.create!(name: "他ユーザー", email: "other-update@example.com", password: "password123") }
+    let!(:product) { Product.create!(name: "更新前", description: "説明", price: 1000, user: owner) }
+
+    def auth_header(user)
+      { "Authorization" => "Bearer #{JwtHelper.encode(user_id: user.id)}" }
+    end
+
+    context "出品者本人の場合" do
+      it "name / price を更新できる" do
+        patch "/api/v1/products/#{product.id}", params: { name: "更新後", price: 1500 }, headers: auth_header(owner), as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(product.reload.name).to eq("更新後")
+        expect(product.price).to eq(1500)
+      end
+
+      it "price が負の値なら 422 を返す" do
+        patch "/api/v1/products/#{product.id}", params: { price: -1 }, headers: auth_header(owner), as: :json
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(product.reload.price).to eq(1000)
+      end
+    end
+
+    context "他のユーザーの場合" do
+      it "403 を返し更新されない" do
+        patch "/api/v1/products/#{product.id}", params: { name: "改ざん" }, headers: auth_header(other), as: :json
+
+        expect(response).to have_http_status(:forbidden)
+        expect(product.reload.name).to eq("更新前")
+      end
+    end
+
+    context "存在しない ID の場合" do
+      it "404 を返す" do
+        patch "/api/v1/products/99999", params: { name: "x" }, headers: auth_header(owner), as: :json
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
 end

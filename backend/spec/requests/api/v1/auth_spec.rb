@@ -16,6 +16,21 @@ RSpec.describe "Api::V1::Auth", type: :request do
         post "/api/v1/auth/register", params: { name: "テスト2", email: "test@example.com", password: "password123" }, as: :json
         expect(response).to have_http_status(:unprocessable_entity)
       end
+
+      it "メール形式が不正なとき 422 を返す" do
+        post "/api/v1/auth/register", params: { name: "テスト", email: "invalid-email", password: "password123" }, as: :json
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+
+      it "name が空のとき 422 を返す" do
+        post "/api/v1/auth/register", params: { name: "", email: "x@example.com", password: "password123" }, as: :json
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+
+      it "password が空のとき 422 を返す" do
+        post "/api/v1/auth/register", params: { name: "テスト", email: "x@example.com", password: "" }, as: :json
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
     end
   end
 
@@ -35,6 +50,34 @@ RSpec.describe "Api::V1::Auth", type: :request do
         post "/api/v1/auth/login", params: { email: "test@example.com", password: "wrong" }, as: :json
         expect(response).to have_http_status(:unauthorized)
       end
+
+      it "存在しないメールアドレスのとき 401 を返す" do
+        post "/api/v1/auth/login", params: { email: "notfound@example.com", password: "password123" }, as: :json
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+  end
+
+  describe "認証が必要なエンドポイント" do
+    it "不正なトークンなら 401 を返す" do
+      get "/api/v1/cart", headers: { "Authorization" => "Bearer invalid.token.here" }, as: :json
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it "Bearer プレフィックスなしでも decode 失敗で 401 を返す" do
+      get "/api/v1/cart", headers: { "Authorization" => "someinvalidtoken" }, as: :json
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it "期限切れトークンなら 401 を返す" do
+      user = User.create!(name: "テスト", email: "expired@example.com", password: "password123")
+      expired_token = JWT.encode(
+        { user_id: user.id, exp: 1.hour.ago.to_i },
+        Rails.application.secret_key_base,
+        "HS256"
+      )
+      get "/api/v1/cart", headers: { "Authorization" => "Bearer #{expired_token}" }, as: :json
+      expect(response).to have_http_status(:unauthorized)
     end
   end
 
